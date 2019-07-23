@@ -3,8 +3,7 @@ import json
 import requests
 import datetime
 
-nowtime = datetime.datetime.now()
-currentTime = nowtime
+currentTime = datetime.datetime.now()
 date = "&date=" + currentTime.strftime("%Y-%m-%d")
 hd = '&True'
 title = ''
@@ -14,14 +13,22 @@ videoURL = ''
 mediaType = ''
 url = ''
 
-def updateDate():
-    global date
-    global currentTime
-    date = "&date=" + currentTime.strftime("%Y-%m-%d")
+def getToday():
+    nowtime = datetime.datetime.now()
+    return nowtime
 
-def connectNASA(date):
-    global url
-    url = 'https://api.nasa.gov/planetary/apod?api_key=ybnJWsrHUoT6QlQLuRpYQ5n0IkwkN7p2m5tvn5Ef'
+def dateFormetChange(date):
+    date = "&date=" + date.strftime("%Y-%m-%d")
+    return date
+
+def updateDate():
+    #global date
+    global currentTime
+    date = dateFormetChange(currentTime)
+    print("this is date: "+ date)
+    return date
+
+def connectNASA(date,apikey):
     global hd
     global title
     global explanation
@@ -29,7 +36,14 @@ def connectNASA(date):
     global imageURL
     global mediaType
     global videoURL
-    url = url + date
+    url = ''
+    print("this is apikey in connectNASA: "+apikey)
+    print('this is date in connectNASA: '+ date)
+    if(apikey == ''):
+        url = 'https://api.nasa.gov/planetary/apod?api_key=ybnJWsrHUoT6QlQLuRpYQ5n0IkwkN7p2m5tvn5Ef'
+        url = url + date
+    else:
+        url = apikey
     r = requests.get(url)
     jData = r.json()
     title = jData['title']
@@ -59,41 +73,58 @@ def hello():
 def previous():
     temp = datetime.timedelta(days=1)
     global currentTime
-    newTime = currentTime - temp
-    currentTime = newTime
-    global date
-    updateDate()
-    return redirect(url_for('APOD'))
+    currentTime = currentTime - temp
+    date = updateDate()
+    print("this is date: "+ date)
+    return redirect(url_for('APOD',date = date, apikey = ''))
 
 @app.route("/next")
 def next():
     global currentTime
-    global nowtime
-    if(nowtime > currentTime):
+    today = getToday()
+    if(today > currentTime):
         temp = datetime.timedelta(days=1)
         currentTime = currentTime + temp
-        global date
-        updateDate()
-        return redirect(url_for('APOD'))
+        date = updateDate()
+        return redirect(url_for('APOD',date = date, apikey = ''))
     else:
         return redirect(url_for('APOD'))
 
-@app.route('/nase', methods=['POST'])
+@app.route('/apikey', methods=['POST'])
 def receive_data():
-    apiKey = request.form['apiKey']
-    print(apiKey)
-    global url
-    url = apiKey
-    return redirect(url_for('APOD'))
-
-
-@app.route("/nasa")
-def APOD():
+    apikey = request.form['apikey']
+    print("this is apikey: "+apikey)
+    #return redirect(url_for('APOD',apikey = apikey))
     global explanation
     global title
     global imageURL
     global videoURL
-    connectNASA(date)
+    connectNASA("",apikey)
+    if(mediaType == 'image'):
+        return render_template('nasa.html',title=title, explanation = explanation, imageURL = imageURL)
+    else:
+        return render_template('nasa.html',title=title, explanation = explanation, videoURL = videoURL)
+
+@app.route("/nasa", defaults = {'date':'','apikey':''})
+@app.route("/nasa/<date>")
+def APOD(date = '',apikey = ''):
+    global explanation
+    global title
+    global imageURL
+    global videoURL
+    apikey = ''
+    # if request.method == 'POST':
+    #     apikey = request.form['apiKey']
+    print("this is date in apod: "+ date)
+    print("this is apikey: "+ apikey)
+    if not (apikey == ''):
+        connectNASA('date',apikey)
+    elif not (date == ''):
+        connectNASA(date,apikey)
+    else:
+        date = getToday()
+        date = dateFormetChange(date)
+        connectNASA(date,apikey)
     if(mediaType == 'image'):
         return render_template('nasa.html',title=title, explanation = explanation, imageURL = imageURL)
     else:
