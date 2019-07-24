@@ -3,18 +3,18 @@ import json
 import requests
 import datetime
 
-currentTime = datetime.datetime.now()
+currentTime = datetime.datetime.now().date()
 date = "&date=" + currentTime.strftime("%Y-%m-%d")
 hd = '&True'
 title = ''
 explanation = ''
-imageURL = 'https://apod.nasa.gov/apod/image/1907/moon_eclipse_span1066.jpg'
+imageURL = ''
 videoURL = ''
 mediaType = ''
 url = ''
 
 def getToday():
-    nowtime = datetime.datetime.now()
+    nowtime = datetime.datetime.now().date()
     return nowtime
 
 def dateFormetChange(date):
@@ -22,10 +22,8 @@ def dateFormetChange(date):
     return date
 
 def updateDate():
-    #global date
     global currentTime
     date = dateFormetChange(currentTime)
-    print("this is date: "+ date)
     return date
 
 def connectNASA(date,apikey):
@@ -37,8 +35,6 @@ def connectNASA(date,apikey):
     global mediaType
     global videoURL
     url = ''
-    print("this is apikey in connectNASA: "+apikey)
-    print('this is date in connectNASA: '+ date)
     if(apikey == ''):
         url = 'https://api.nasa.gov/planetary/apod?api_key=ybnJWsrHUoT6QlQLuRpYQ5n0IkwkN7p2m5tvn5Ef'
         url = url + date
@@ -48,7 +44,6 @@ def connectNASA(date,apikey):
     jData = r.json()
     title = jData['title']
     explanation = jData['explanation']
-    print(explanation)
     mediaType = jData['media_type']
     if(mediaType == 'image'):
         imageURL = jData['url']
@@ -58,16 +53,16 @@ def connectNASA(date,apikey):
         imageURL = ''
         videoURL = jData['url']
         mediaType = 'video'
-        print(videoURL)
-    print(jData["title"])
-    print('\n')
-    print(jData['explanation'])
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello world"
+    return """Hello, welcome to the NASA APOD alternative website!
+                This website can show the APOD by enter the url 'http://127.0.0.1:5000/nasa.
+                You can use this website browse yesterday's APOD or next's day APOD(if it exist).
+                You also can enter your own api key to browse any date of APOD you want.
+                """
 
 @app.route("/previous", methods = ['POST','GET'])
 def previous():
@@ -75,26 +70,24 @@ def previous():
     global currentTime
     currentTime = currentTime - temp
     date = updateDate()
-    print("this is date: "+ date)
     return redirect(url_for('APOD',date = date, apikey = ''))
 
 @app.route("/next")
 def next():
     global currentTime
     today = getToday()
+    date = ''
     if(today > currentTime):
         temp = datetime.timedelta(days=1)
         currentTime = currentTime + temp
         date = updateDate()
-        return redirect(url_for('APOD',date = date, apikey = ''))
     else:
-        return redirect(url_for('APOD'))
+        date = dateFormetChange(today)
+    return redirect(url_for('APOD',date = date, apikey = ''))
 
 @app.route('/apikey', methods=['POST'])
 def receive_data():
     apikey = request.form['apikey']
-    print("this is apikey: "+apikey)
-    #return redirect(url_for('APOD',apikey = apikey))
     global explanation
     global title
     global imageURL
@@ -113,10 +106,6 @@ def APOD(date = '',apikey = ''):
     global imageURL
     global videoURL
     apikey = ''
-    # if request.method == 'POST':
-    #     apikey = request.form['apiKey']
-    print("this is date in apod: "+ date)
-    print("this is apikey: "+ apikey)
     if not (apikey == ''):
         connectNASA('date',apikey)
     elif not (date == ''):
