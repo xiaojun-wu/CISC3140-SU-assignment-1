@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, url_for, redirect
 import requests
 import datetime
+from gevent.pywsgi import WSGIServer
 
 currentTime = datetime.datetime.now().date()
 date = "&date=" + currentTime.strftime("%Y-%m-%d")
@@ -120,4 +121,6 @@ def APOD(date = '',apikey = ''):
 
 
 if __name__ == "__main__":
-    app.run()
+    #app.run()
+    http_server = WSGIServer(('127.0.0.1', 5000), app)
+    http_server.serve_forever()
