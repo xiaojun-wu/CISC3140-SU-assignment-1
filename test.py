@@ -58,11 +58,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return """Hello, welcome to the NASA APOD alternative website!
-                This website can show the APOD by enter the url 'http://127.0.0.1:5000/nasa.
-                You can use this website browse yesterday's APOD or next's day APOD(if it exist).
-                You also can enter your own api key to browse any date of APOD you want.
-                """
+    return 'Hello, welcome to the NASA APOD alternative website!'
 
 @app.route("/previous", methods = ['POST','GET'])
 def previous():
