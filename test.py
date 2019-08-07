@@ -53,6 +53,7 @@ def connectNASA(date,apikey):
         imageURL = ''
         videoURL = jData['url']
         mediaType = 'video'
+    return title + " " + explanation + " " + jData['url']
 
 app = Flask(__name__)
 

@@ -3,7 +3,7 @@ import test
 import json
 import datetime
 import requests
-
+from test import *
 
 class webTest(unittest.TestCase):
     currentTime = datetime.datetime.now().date()
@@ -32,6 +32,26 @@ class webTest(unittest.TestCase):
         self.assertIn(str.encode(title),response.data)
         #self.assertIn(explanation,response.data)
         self.assertIn(str.encode(mediaURL),response.data)
+
+
+    def test_getToday(self):
+        self.assertEqual(currentTime,getToday())
+
+    def test_dateFormetChange(self):
+        self.assertEqual(date,dateFormetChange(getToday()))
+
+    def test_updateDate(self):
+        self.assertEqual(date,updateDate())
+
+    def test_connectNASA(self):
+        url = 'https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY' + date
+        r = requests.get(url)
+        jData = r.json()
+        title = jData['title']
+        explanation = jData['explanation']
+        mediaURL = jData['url']
+        expectation = title + " " + explanation + " " + mediaURL
+        self.assertEqual(expectation,connectNASA("",url))
 
 
 if __name__== "__main__":
