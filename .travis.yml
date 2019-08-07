@@ -4,7 +4,7 @@ python:
 cache: pip
 install:
   - pip install -r requirements.txt
-  - pip install coverage
+  - pip install coveralls
 script:
-  - python unitTest.py
+  #- python unitTest.py
   - coverage report -m unitTest.py
