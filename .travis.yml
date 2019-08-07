@@ -6,3 +6,4 @@ install:
   - pip install -r requirements.txt
 script:
   - python unitTest.py
+  - coverage report -m unitTest.py
